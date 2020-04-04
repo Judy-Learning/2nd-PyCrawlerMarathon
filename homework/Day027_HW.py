@@ -2,14 +2,16 @@
 import scrapy
 import re
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+from pathlib import Path
 from pprint import pprint
+from ..items import PTTArticleItem
 
-# 範例目標網址: http://https://www.ptt.cc/bbs/KoreaDrama/M.1585846377.A.B81.html
-class Day026HwSpider(scrapy.Spider):
-    name = 'Day026_HW'
+# 範例目標網址: https://www.ptt.cc/bbs/KoreaDrama/M.1585846377.A.B81.html
+class Day027HwSpider(scrapy.Spider):
+    name = 'Day027_HW'
     allowed_domains = ['www.ptt.cc']
-    start_urls = ['http://https://www.ptt.cc/bbs/KoreaDrama/M.1585846377.A.B81.html']
+    start_urls = ['https://www.ptt.cc/bbs/KoreaDrama/M.1585846377.A.B81.html']
     cookies = {'over18': '1'}
 
     def start_requests(self):
@@ -126,14 +128,15 @@ class Day026HwSpider(scrapy.Spider):
         message_count = {'all': p+b+n, 'count': p-b, 'push': p, 'boo': b, 'neutral': n}
         
         # 整理文章資訊
-        data = {
-            'url': response.url,
-            'article_author': author,
-            'article_title': title,
-            'article_date': date,
-            'article_content': content,
-            'ip': ip,
-            'message_count': message_count,
-            'messages': messages
-        }
+        data = PTTArticleItem()
+        article_id = str(Path(urlparse(response.url).path).stem)
+        data['url'] = response.url
+        data['article_id'] = article_id
+        data['article_author'] = author
+        data['article_title'] = title
+        data['article_date'] = date
+        data['article_content'] = content
+        data['ip'] = ip
+        data['message_count'] = message_count
+        data['messages'] = messages
         yield data
